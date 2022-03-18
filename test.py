@@ -7,5 +7,5 @@ if __name__ == '__main__':
     conn = duckdb.connect(db_path, read_only=True)
 
     # execute
-    df = conn.execute('SELECT * FROM train1').fetchdf()
+    df = conn.execute('SELECT * FROM train').fetchdf()
     print(df)

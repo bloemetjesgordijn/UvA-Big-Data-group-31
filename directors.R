@@ -17,21 +17,6 @@ df <- as.data.frame(do.call("cbind", json_file))
 directors = as.data.table(df)
 
 # select tconst columns
-train = as.data.table(dbGetQuery(con,
-                 "SELECT tconst FROM train1 
-                 UNION
-                 SELECT tconst FROM train2
-                 UNION
-                 SELECT tconst FROM train3 
-                 UNION
-                 SELECT tconst FROM train4
-                 UNION
-                 SELECT tconst FROM train5 
-                 UNION
-                 SELECT tconst FROM train6
-                 UNION
-                 SELECT tconst FROM train7 
-                 UNION
-                 SELECT tconst FROM train8"))
+train = as.data.table(dbGetQuery(con, "SELECT tconst FROM train"))
 
 train = merge(train, directors, by.x = "tconst", by.y = "movie", all.x = T)
