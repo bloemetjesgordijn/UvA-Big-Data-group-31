@@ -1,14 +1,17 @@
 import duckdb
 import math
+import os
 import unidecode
 import pandas as pd
 
 
 
 if __name__ == '__main__':
+    print(os.getcwd())
     conn = duckdb.connect('db.duckdb', read_only=False)
     # Create dataframe from all tables in the db
     frames = []
+    print(conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist())
     for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
         frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
     full_train_df = pd.concat(frames)
@@ -69,7 +72,7 @@ if __name__ == '__main__':
     # Remove all train tables from the database
     for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
         if i.startswith('train'):
-            conn.execute(f"DROP VIEW {i}")
+            conn.execute(f"DROP TABLE {i}")
 
 
     # Create new tables based on created single cleaned lists

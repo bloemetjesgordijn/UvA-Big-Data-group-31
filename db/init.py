@@ -1,11 +1,11 @@
 import os
 import duckdb
-
 import pandas as pd
 
 
 if __name__ == '__main__':
     # connect or create
+    print(os.getcwd())
     conn = duckdb.connect('db.duckdb', read_only=False)
 
     # Delete any existing tables
@@ -26,3 +26,5 @@ if __name__ == '__main__':
             train_table_name_list.append(new_name)
             conn.register(new_name, df)
             conn.execute(f'CREATE TABLE {new_name} AS SELECT * FROM {new_name}')
+    
+    print(conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist())
