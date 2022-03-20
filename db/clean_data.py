@@ -5,20 +5,7 @@ import unidecode
 import pandas as pd
 
 
-
-if __name__ == '__main__':
-    print(os.getcwd())
-    conn = duckdb.connect('db.duckdb', read_only=False)
-    # Create dataframe from all tables in the db
-    frames = []
-    print(conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist())
-    for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
-        frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
-    full_train_df = pd.concat(frames)
-
-    #Create cleaned single lists for every column
-    tconst = full_train_df['tconst'].tolist()
-
+def clean_and_send(full_train_df, tconst, train = True):
     primary_title = []
     for i in range(len(full_train_df)):
         primary_title.append([tconst[i], unidecode.unidecode(full_train_df.iloc[i]['primaryTitle'])])
@@ -64,10 +51,11 @@ if __name__ == '__main__':
         else:
             num_votes.append([tconst[i], int(curr)])
 
-    labels = full_train_df['label'].tolist()
-    label_list = []
-    for i in range(len(labels)):
-        label_list.append([tconst[i], labels[i]])
+    if train:
+        labels = full_train_df['label'].tolist()
+        label_list = []
+        for i in range(len(labels)):
+            label_list.append([tconst[i], labels[i]])
 
     # Remove all train tables from the database
     for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
@@ -76,88 +64,130 @@ if __name__ == '__main__':
 
 
     # Create new tables based on created single cleaned lists
-
-    curr = "primary_title"
+    if train:
+        curr = "primary_title"
+    else:
+        curr = "test_primary_title"
     print(f"Creating {curr} table")
     try:
-        conn.execute('DROP TABLE primary_title')
+        conn.execute(f'DROP TABLE {curr}')
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE primary_title(tconst VARCHAR PRIMARY KEY, primary_title VARCHAR)')
-        conn.executemany("INSERT INTO primary_title VALUES (?, ?)", primary_title)
+        conn.execute(f"CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, primary_title VARCHAR)")
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", primary_title)
 
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")    
-
-    curr = "original_title"
+    
+    if train:
+        curr = "original_title"
+    else:
+        curr = "test_original_title"
     print(f"Creating {curr} table")
     try:
-        conn.execute('DROP TABLE original_title')
+        conn.execute(f'DROP TABLE {curr}')
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE original_title(tconst VARCHAR PRIMARY KEY, original_title VARCHAR)')
-        conn.executemany("INSERT INTO original_title VALUES (?, ?)", original_title)
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, original_title VARCHAR)')
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", original_title)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")   
-        
-    curr = "start_year"
+    
+    if train:
+        curr = "start_year"
+    else: 
+        curr = "test_start_year"
     print(f"Creating {curr} table")
     try:
-        conn.execute('DROP TABLE start_year')
+        conn.execute(f'DROP TABLE {curr}')
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE start_year(tconst VARCHAR PRIMARY KEY, start_year INTEGER)')
-        conn.executemany("INSERT INTO start_year VALUES (?, ?)", start_year)
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, start_year INTEGER)')
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", start_year)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
         
-    curr = "end_year"
+    if train:
+        curr = "end_year"
+    else:
+        curr = "test_end_year"
     print(f"Creating {curr} table")
     try:
-        conn.execute('DROP TABLE end_year')
+        conn.execute(f'DROP TABLE {curr}')
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE end_year(tconst VARCHAR PRIMARY KEY, end_year INTEGER)')
-        conn.executemany("INSERT INTO end_year VALUES (?, ?)", end_year)
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, end_year INTEGER)')
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", end_year)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
         
-    curr = "runtime"
+    if train:
+        curr = "runtime"
+    else:
+        curr = "test_runtime"
     print(f"Creating {curr} table")
     try:
-        conn.execute('DROP TABLE runtime')
+        conn.execute(f'DROP TABLE {curr}')
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE runtime(tconst VARCHAR PRIMARY KEY, runtime_minutes INTEGER)')
-        conn.executemany("INSERT INTO runtime VALUES (?, ?)", runtime_minutes)
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, runtime_minutes INTEGER)')
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", runtime_minutes)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
 
-    curr = "num_votes"
+    if train:
+        curr = "num_votes"
+    else:
+        curr = "test_num_votes"
     print(f"Creating {curr} table")
     try:
-        conn.execute('DROP TABLE num_votes')
+        conn.execute(f'DROP TABLE {curr}')
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE num_votes(tconst VARCHAR PRIMARY KEY, num_votes INTEGER)')
-        conn.executemany("INSERT INTO num_votes VALUES (?, ?)", num_votes)
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, num_votes INTEGER)')
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", num_votes)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
-        e
-    curr = "labels"
-    print(f"Creating {curr} table")
-    try:
-        conn.execute('DROP TABLE labels')
-    except:
-        print(f"   {curr} did not exist")
-    try:
-        conn.execute('CREATE TABLE labels(tconst VARCHAR PRIMARY KEY, labels BOOLEAN)')
-        conn.executemany("INSERT INTO labels VALUES (?, ?)", label_list)
-    except Exception as e:
-        print(f"   Could not create {curr} with error: {e}")
+    
+    if train:
+        curr = "labels"
+        print(f"Creating {curr} table")
+        try:
+            conn.execute(f'DROP TABLE {curr}')
+        except:
+            print(f"   {curr} did not exist")
+        try:
+            conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, labels BOOLEAN)')
+            conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", label_list)
+        except Exception as e:
+            print(f"   Could not create {curr} with error: {e}")
+
+
+if __name__ == '__main__':
+    conn = duckdb.connect('db.duckdb', read_only=False)
+    # Create dataframe from all tables in the db
+    frames = []
+    test_frames = []
+    print(conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist())
+    for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
+        if i.startswith('train'):
+            frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
+        else:
+            test_frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
+    full_train_df = pd.concat(frames)
+    full_test_df = pd.concat(test_frames)
+
+    #Create cleaned single lists for every column
+    tconst_train = full_train_df['tconst'].tolist()
+    tconst_test = full_test_df['tconst'].tolist()
+
+    clean_and_send(full_test_df, tconst_test, False)
+    clean_and_send(full_train_df, tconst_train, True)
+
+
