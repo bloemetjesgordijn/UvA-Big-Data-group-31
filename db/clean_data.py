@@ -17,57 +17,57 @@ if __name__ == '__main__':
     full_train_df = pd.concat(frames)
 
     #Create cleaned single lists for every column
-    tconst_list = full_train_df['tconst'].tolist()
+    tconst = full_train_df['tconst'].tolist()
 
     primary_title = []
     for i in range(len(full_train_df)):
-        primary_title.append(unidecode.unidecode(full_train_df.iloc[i]['primaryTitle']))
+        primary_title.append([tconst[i], unidecode.unidecode(full_train_df.iloc[i]['primaryTitle'])])
 
     original_title = []
     for i in range(len(full_train_df)):
         curr = full_train_df.iloc[i]['originalTitle']
+        curr_primary_title = full_train_df.iloc[i]['primaryTitle']
         if isinstance(curr, str):
-            original_title.append(unidecode.unidecode(curr))
+            original_title.append([tconst[i], unidecode.unidecode(curr)])
         else:
-            original_title.append('')
+            original_title.append([tconst[i], ''])
 
     start_year = []
     for i in range(len(full_train_df)):
         curr = full_train_df.iloc[i]['startYear']
         if curr == "\\N":
-            start_year.append(int())
+            start_year.append([tconst[i], int()])
         else:
-            start_year.append(int(curr))
-    start_year = [x for x in start_year if math.isnan(x) == False]
+            start_year.append([tconst[i], int(curr)])
 
     end_year = []
     for i in range(len(full_train_df)):
         curr = full_train_df.iloc[i]['endYear']
         if curr == "\\N":
-            end_year.append(int())
+            end_year.append([tconst[i], int()])
         else:
-            end_year.append(int(curr))
-    end_year = [x for x in end_year if math.isnan(x) == False]
+            end_year.append([tconst[i], int(curr)])
 
     runtime_minutes = []
     for i in range(len(full_train_df)):
         curr = full_train_df.iloc[i]['runtimeMinutes']
         if curr == "\\N":
-            runtime_minutes.append(int())
+            runtime_minutes.append([tconst[i], int()])
         else:
-            runtime_minutes.append(int(curr))
-    runtime_minutes = [x for x in runtime_minutes if math.isnan(x) == False]
+            runtime_minutes.append([tconst[i], int(curr)])
 
     num_votes = []
     for i in range(len(full_train_df)):
         curr = full_train_df.iloc[i]['numVotes']
         if curr == 'nan' or curr == "NaN" or math.isnan(curr):
-            num_votes.append(int())
+            num_votes.append([tconst[i], int()])
         else:
-            num_votes.append(int(curr))
-    num_votes = [x for x in num_votes if math.isnan(x) == False]
+            num_votes.append([tconst[i], int(curr)])
 
     labels = full_train_df['label'].tolist()
+    label_list = []
+    for i in range(len(labels)):
+        label_list.append([tconst[i], labels[i]])
 
     # Remove all train tables from the database
     for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
@@ -84,7 +84,9 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE primary_title(tconst_list INTEGER PRIMARY KEY, primary_title VARCHAR)')
+        conn.execute('CREATE TABLE primary_title(tconst VARCHAR PRIMARY KEY, primary_title VARCHAR)')
+        conn.executemany("INSERT INTO primary_title VALUES (?, ?)", primary_title)
+
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")    
 
@@ -95,7 +97,8 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE original_title(tconst_list INTEGER PRIMARY KEY, original_title VARCHAR)')
+        conn.execute('CREATE TABLE original_title(tconst VARCHAR PRIMARY KEY, original_title VARCHAR)')
+        conn.executemany("INSERT INTO original_title VALUES (?, ?)", original_title)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")   
         
@@ -106,7 +109,8 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE start_year(tconst_list INTEGER PRIMARY KEY, start_year INTEGER)')
+        conn.execute('CREATE TABLE start_year(tconst VARCHAR PRIMARY KEY, start_year INTEGER)')
+        conn.executemany("INSERT INTO start_year VALUES (?, ?)", start_year)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
         
@@ -117,7 +121,8 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE end_year(tconst_list INTEGER PRIMARY KEY, end_year INTEGER)')
+        conn.execute('CREATE TABLE end_year(tconst VARCHAR PRIMARY KEY, end_year INTEGER)')
+        conn.executemany("INSERT INTO end_year VALUES (?, ?)", end_year)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
         
@@ -128,7 +133,8 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE runtime(tconst_list INTEGER PRIMARY KEY, runtime_minutes INTEGER)')
+        conn.execute('CREATE TABLE runtime(tconst VARCHAR PRIMARY KEY, runtime_minutes INTEGER)')
+        conn.executemany("INSERT INTO runtime VALUES (?, ?)", runtime_minutes)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
 
@@ -139,10 +145,11 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE num_votes(tconst_list INTEGER PRIMARY KEY, num_votes INTEGER)')
+        conn.execute('CREATE TABLE num_votes(tconst VARCHAR PRIMARY KEY, num_votes INTEGER)')
+        conn.executemany("INSERT INTO num_votes VALUES (?, ?)", num_votes)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
-        
+        e
     curr = "labels"
     print(f"Creating {curr} table")
     try:
@@ -150,6 +157,7 @@ if __name__ == '__main__':
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute('CREATE TABLE labels(tconst_list INTEGER PRIMARY KEY, labels BOOLEAN)')
+        conn.execute('CREATE TABLE labels(tconst VARCHAR PRIMARY KEY, labels BOOLEAN)')
+        conn.executemany("INSERT INTO labels VALUES (?, ?)", label_list)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
