@@ -1,4 +1,7 @@
 # functions
+paths <- list()
+paths[["current"]] <- getwd()
+paths[["data"]] <- paste0(paths$current, "/db/")
 source(paste0(paths$current, "/main.R"))
 
 # format json
@@ -35,3 +38,9 @@ train = as.data.table(dbGetQuery(con,
                  SELECT tconst FROM train8"))
 
 train = merge(train, directors, by.x = "tconst", by.y = "movie", all.x = T)
+
+# train$director = digest2int(train$director)
+# train$director = as.factor(train$director)
+
+dbWriteTable(con, "directors", train, overwrite = TRUE)
+

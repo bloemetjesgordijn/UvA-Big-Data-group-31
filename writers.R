@@ -41,3 +41,6 @@ train = as.data.table(dbGetQuery(con,
                  SELECT tconst FROM train8"))
 
 train = merge(train, writers, by.x = "tconst", by.y = "movie", all.x = T)
+
+
+dbWriteTable(con, "writers", train, overwrite = TRUE)
