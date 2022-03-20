@@ -1,7 +1,10 @@
 import os
 import duckdb
+import requests
 
 import pandas as pd
+
+from io import StringIO
 
 
 if __name__ == '__main__':
@@ -29,4 +32,25 @@ if __name__ == '__main__':
                 conn.execute(f'INSERT INTO train SELECT * FROM {new_name}')
 
             count += 1
+        
+        elif fname.endswith('.json'):
+            # load json in pandas df
+            df = pd.read_json(path)
+
+            # register and create in duckdb
+            new_name = fname.replace('.json', '')
+            conn.register(new_name, df)
+
+            conn.execute(f'CREATE TABLE {new_name} AS SELECT * FROM {new_name}')
+
+    # get genres
+    external = 'https://raw.githubusercontent.com/sidooms/MovieTweetings/master/latest/movies.dat'
+    response = requests.get(external)
+
+    df = pd.read_table(StringIO(response.content.decode('utf-8')), sep='::', engine='python', names=['tconst', 'title', 'genre'])
+
+    conn.register('genres', df)
+    conn.execute('CREATE TABLE genres AS SELECT * FROM genres')
+
+    conn.close()
             
