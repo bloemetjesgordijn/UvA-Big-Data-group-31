@@ -26,3 +26,6 @@ writers = dcast(writers, movie ~ paste0("writer", Index), value.var = "writer")
 train = as.data.table(dbGetQuery(con, "SELECT tconst FROM train"))
 
 train = merge(train, writers, by.x = "tconst", by.y = "movie", all.x = T)
+
+
+dbWriteTable(con, "writers", train, overwrite = TRUE)
