@@ -5,9 +5,6 @@ import unidecode
 import pandas as pd
 
 
-
-
-
 def clean_and_send(full_train_df, tconst, set_type):
 
     with open("../movietweetings/ratings.dat", "r") as a:
@@ -223,7 +220,7 @@ def clean_and_send(full_train_df, tconst, set_type):
     except:
         print(f"   {curr} did not exist")
     try:
-        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, rating INTEGER)')
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, rating FLOAT)')
         conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", ratings_list)
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
