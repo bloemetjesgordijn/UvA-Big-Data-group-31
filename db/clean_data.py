@@ -8,7 +8,7 @@ import pandas as pd
 
 
 
-def clean_and_send(full_train_df, tconst, train = True):
+def clean_and_send(full_train_df, tconst, set_type):
 
     with open("../movietweetings/ratings.dat", "r") as a:
         ratings = a.read().splitlines()
@@ -78,7 +78,7 @@ def clean_and_send(full_train_df, tconst, train = True):
     for i in range(len(mean_ratings_list)):
         ratings_list.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
 
-    if train:
+    if set_type == 'train':
         labels = full_train_df['label'].tolist()
         label_list = []
         for i in range(len(labels)):
@@ -88,13 +88,19 @@ def clean_and_send(full_train_df, tconst, train = True):
     for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
         if i.startswith('train'):
             conn.execute(f"DROP TABLE {i}")
-
+    # Remove test_hidden and test_validation tables from the database
+    if set_type == 'test':
+        conn.execute(f"DROP TABLE test_hidden")
+    if set_type == 'validation':
+        conn.execute(f"DROP TABLE validation_hidden")
 
     # Create new tables based on created single cleaned lists
-    if train:
+    if set_type == 'train':
         curr = "primary_title"
-    else:
+    elif set_type == 'test':
         curr = "test_primary_title"
+    elif set_type == 'validation':
+        curr = "validation_primary_title"
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -107,10 +113,12 @@ def clean_and_send(full_train_df, tconst, train = True):
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")    
     
-    if train:
+    if set_type == 'train':
         curr = "original_title"
-    else:
+    elif set_type == 'test':
         curr = "test_original_title"
+    elif set_type == 'validation':
+        curr = "validation_original_title"
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -122,10 +130,12 @@ def clean_and_send(full_train_df, tconst, train = True):
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")   
     
-    if train:
+    if set_type == 'train':
         curr = "start_year"
-    else: 
+    elif set_type == 'test': 
         curr = "test_start_year"
+    elif set_type == 'validation':
+        curr = 'validation_start_year'
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -137,10 +147,12 @@ def clean_and_send(full_train_df, tconst, train = True):
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
         
-    if train:
+    if set_type == 'train':
         curr = "end_year"
-    else:
+    elif set_type == 'test':
         curr = "test_end_year"
+    elif set_type == 'validation':
+        curr = "validation_end_year"
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -152,10 +164,12 @@ def clean_and_send(full_train_df, tconst, train = True):
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
         
-    if train:
+    if set_type == 'train':
         curr = "runtime"
-    else:
+    elif set_type == 'test':
         curr = "test_runtime"
+    elif set_type == 'validation':
+        curr = "validation_runtime"
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -167,10 +181,12 @@ def clean_and_send(full_train_df, tconst, train = True):
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
 
-    if train:
+    if set_type == 'train':
         curr = "num_votes"
-    else:
+    elif set_type == 'test':
         curr = "test_num_votes"
+    elif set_type == 'validation':
+        curr = "validation_num_votes"
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -182,7 +198,7 @@ def clean_and_send(full_train_df, tconst, train = True):
     except Exception as e:
         print(f"   Could not create {curr} with error: {e}")
     
-    if train:
+    if set_type == 'train':
         curr = "labels"
         print(f"Creating {curr} table")
         try:
@@ -195,10 +211,12 @@ def clean_and_send(full_train_df, tconst, train = True):
         except Exception as e:
             print(f"   Could not create {curr} with error: {e}")
 
-    if train:
+    if set_type == 'train':
         curr = "user_ratings"
-    else:
+    elif set_type == 'test':
         curr = "test_user_ratings"
+    elif set_type == "validation":
+        curr = "validation_user_ratings"
     print(f"Creating {curr} table")
     try:
         conn.execute(f'DROP TABLE {curr}')
@@ -216,20 +234,26 @@ if __name__ == '__main__':
     # Create dataframe from all tables in the db
     frames = []
     test_frames = []
+    validation_frames = []
     print(conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist())
     for i in conn.execute('PRAGMA show_tables').fetchdf()['name'].tolist():
         if i.startswith('train'):
             frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
-        else:
+        elif i.startswith('test'):
             test_frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
+        elif i.startswith('validation'):
+            validation_frames.append(conn.execute(f"SELECT * FROM {i}").fetchdf())
     full_train_df = pd.concat(frames)
     full_test_df = pd.concat(test_frames)
+    full_validation_df = pd.concat(validation_frames)
 
     #Create cleaned single lists for every column
     tconst_train = full_train_df['tconst'].tolist()
     tconst_test = full_test_df['tconst'].tolist()
+    tconst_validation = full_validation_df['tconst'].tolist()
 
-    clean_and_send(full_test_df, tconst_test, False)
-    clean_and_send(full_train_df, tconst_train, True)
+    clean_and_send(full_validation_df, tconst_validation, 'validation')
+    clean_and_send(full_test_df, tconst_test, 'test')
+    clean_and_send(full_train_df, tconst_train, 'train')
 
 
