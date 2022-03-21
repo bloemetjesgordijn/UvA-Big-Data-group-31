@@ -5,7 +5,28 @@ import unidecode
 import pandas as pd
 
 
+
+
+
 def clean_and_send(full_train_df, tconst, train = True):
+
+    with open("../movietweetings/ratings.dat", "r") as a:
+        ratings = a.read().splitlines()
+    ## This takes 2 minutes.
+    ratings_tconst_list = []
+    ratings_ratings_list = []
+    for i in ratings:
+        split_item = i.split('::')
+        curr_tconst = "tt" + split_item[1]
+        if curr_tconst in tconst:
+            rating = split_item[2]
+            ratings_tconst_list.append(curr_tconst)
+            ratings_ratings_list.append(int(rating))
+
+    ratings_df = pd.DataFrame(list(zip(ratings_tconst_list, ratings_ratings_list)), columns =['tconst', 'rating'])
+    mean_ratings_df = ratings_df.groupby(['tconst']).mean()
+
+
     primary_title = []
     for i in range(len(full_train_df)):
         primary_title.append([tconst[i], unidecode.unidecode(full_train_df.iloc[i]['primaryTitle'])])
@@ -50,6 +71,12 @@ def clean_and_send(full_train_df, tconst, train = True):
             num_votes.append([tconst[i], int()])
         else:
             num_votes.append([tconst[i], int(curr)])
+
+    mean_ratings_list = mean_ratings_df['rating'].tolist()
+    mean_ratings_tconsts = mean_ratings_df.index.tolist()
+    ratings_list = []
+    for i in range(len(mean_ratings_list)):
+        ratings_list.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
 
     if train:
         labels = full_train_df['label'].tolist()
@@ -167,6 +194,21 @@ def clean_and_send(full_train_df, tconst, train = True):
             conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", label_list)
         except Exception as e:
             print(f"   Could not create {curr} with error: {e}")
+
+    if train:
+        curr = "user_ratings"
+    else:
+        curr = "test_user_ratings"
+    print(f"Creating {curr} table")
+    try:
+        conn.execute(f'DROP TABLE {curr}')
+    except:
+        print(f"   {curr} did not exist")
+    try:
+        conn.execute(f'CREATE TABLE {curr}(tconst VARCHAR PRIMARY KEY, rating INTEGER)')
+        conn.executemany(f"INSERT INTO {curr} VALUES (?, ?)", ratings_list)
+    except Exception as e:
+        print(f"   Could not create {curr} with error: {e}")
 
 
 if __name__ == '__main__':
