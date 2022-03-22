@@ -3,6 +3,8 @@ import pandas as pd
 import os
 
 if __name__ == '__main__':
+    ### Connect to DB
+    conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=True)
 
     ### File specific variables
     duckDB_col = "movielens_ratings"
