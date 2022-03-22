@@ -1,8 +1,6 @@
 @ECHO OFF
 ECHO ====STARTING SCRIPT=====
-echo Startin/cleaning DuckDB and inititializing local train tables.
-python %cd%/db/init.py
-echo ====Initialized train tables
+
 echo ====Cleaning start_year
 python %cd%/clean_scripts/start_year.py
 echo ====Cleaned start_year
@@ -23,17 +21,17 @@ python %cd%/clean_scripts/num_votes.py
 echo ====Cleaned num_votes
 echo ====Cleaning runtime
 python %cd%/clean_scripts/runtime.py
+echo ====Cleaned runtime
 echo ====Enriching dataset with user ratings from twitter dataset
 python %cd%/enrich_data/ratings.py
 echo ====Enriched with user ratings
-echo ====Deleting original train/test/validation tables
-python %cd%/clean_scripts/delete_initial.py
-echo ====Deleted original train/test/validation tables
+
 echo ====Going to train the Machine Learning models
 python %cd%/machine_learning/train.py
 echo ====Trained and saved models
 echo ====Predicting test/validation data
 python %cd%/machine_learning/predict.py
 echo ====Predicted data
+
 
 PAUSE

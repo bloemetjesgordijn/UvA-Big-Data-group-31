@@ -13,7 +13,7 @@ if __name__ == '__main__':
     epochs = 10
     conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=True)
     
-    merged_df = conn.execute('''SELECT end_year_train.tconst, end_year_train.end_year, labels_train.labels, num_votes_train.num_votes, original_title_train.original_title, primary_title_train.primary_title, runtime_minutes_train.runtime_minutes, start_year_train.start_year, user_ratings_train.user_ratings  
+    merged_df = conn.execute('''SELECT end_year_train.tconst, end_year_train.end_year, labels_train.labels, num_votes_train.num_votes, original_title_train.original_title, primary_title_train.primary_title, runtime_minutes_train.runtime_minutes, start_year_train.start_year, user_ratings_train.user_ratings, tmdb_ratings_train.tmdb_ratings  
                          FROM end_year_train 
                          INNER JOIN labels_train ON labels_train.tconst = end_year_train.tconst
                          INNER JOIN num_votes_train ON end_year_train.tconst = num_votes_train.tconst
@@ -22,6 +22,7 @@ if __name__ == '__main__':
                          INNER JOIN runtime_minutes_train ON end_year_train.tconst = runtime_minutes_train.tconst
                          INNER JOIN start_year_train ON end_year_train.tconst = start_year_train.tconst
                          FULL OUTER JOIN user_ratings_train ON end_year_train.tconst = user_ratings_train.tconst
+                         FULL OUTER JOIN tmdb_ratings_train ON end_year_train.tconst = tmdb_ratings_train.tconst
                          ''').fetchdf()
 
     tconst_order = conn.execute('SELECT tconst FROM end_year_train').fetchdf()
@@ -40,6 +41,8 @@ if __name__ == '__main__':
         
     merged_df['renamed'] = renamed
 
+    merged_df['user_ratings'] = merged_df['tmdb_ratings']
+    merged_df = merged_df.drop('tmdb_ratings', 1)
 
     ### Transforming data to suit ML
     merged_df = merged_df.drop('original_title', 1)
