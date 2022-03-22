@@ -82,7 +82,6 @@ if __name__ == '__main__':
     # print(f"{len(test_with_rating_index)} + {len(test_without_rating_index)} = {len(test_merged_df)}")
     # print(f"{len(validation_with_rating_index)} + {len(validation_without_rating_index)} = {len(validation_merged_df)}")
 
-
     test_with_rating = test_merged_df.iloc[test_with_rating_index]
     test_without_rating = test_merged_df.iloc[test_without_rating_index]
     test_without_rating = test_without_rating.drop('user_ratings', 1)

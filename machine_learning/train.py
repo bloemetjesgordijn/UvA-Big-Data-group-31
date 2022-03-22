@@ -10,7 +10,7 @@ import keras.optimizers
 import tensorflow as tf
 
 if __name__ == '__main__':
-    epochs = 2
+    epochs = 10
     conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=True)
     
     merged_df = conn.execute('''SELECT end_year_train.tconst, end_year_train.end_year, labels_train.labels, num_votes_train.num_votes, original_title_train.original_title, primary_title_train.primary_title, runtime_minutes_train.runtime_minutes, start_year_train.start_year, user_ratings_train.user_ratings  
