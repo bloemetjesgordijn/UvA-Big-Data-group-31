@@ -1,0 +1,32 @@
+{
+    "id": "28A55EA1",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1647845705012.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "expression": "writers",
+        "caption": "writers",
+        "totalObservations": 10000,
+        "displayedObservations": 10000,
+        "variables": 30,
+        "cacheKey": "1EDEF051",
+        "object": "writers",
+        "environment": "",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=writers&cache_key=1EDEF051&max_cols=50",
+        "preview": 0
+    },
+    "folds": "",
+    "lastKnownWriteTime": 2134710281512,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1647845705012,
+    "read_only": false,
+    "read_only_alternatives": []
+}
