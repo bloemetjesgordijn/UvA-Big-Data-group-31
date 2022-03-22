@@ -1,0 +1,8 @@
+duckdb
+pandas
+unidecode
+requests
+numpy
+sklearn
+keras
+tensorflow

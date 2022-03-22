@@ -11,11 +11,12 @@ from keras.layers import Dense        # importing Dense layers
 import keras.optimizers
 import tensorflow as tf
 import time
+import math
 
 if __name__ == '__main__':
     conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=True)
 
-    test_merged_df = conn.execute('''SELECT end_year_test.tconst, end_year_test.end_year, num_votes_test.num_votes, original_title_test.original_title, primary_title_test.primary_title, runtime_minutes_test.runtime_minutes, start_year_test.start_year, user_ratings_test.user_ratings  
+    test_merged_df = conn.execute('''SELECT end_year_test.tconst, end_year_test.end_year, num_votes_test.num_votes, original_title_test.original_title, primary_title_test.primary_title, runtime_minutes_test.runtime_minutes, start_year_test.start_year, user_ratings_test.user_ratings, tmdb_ratings_test.tmdb_ratings   
                          FROM end_year_test 
                          INNER JOIN num_votes_test ON end_year_test.tconst = num_votes_test.tconst
                          INNER JOIN original_title_test ON end_year_test.tconst = original_title_test.tconst
@@ -23,13 +24,14 @@ if __name__ == '__main__':
                          INNER JOIN runtime_minutes_test ON end_year_test.tconst = runtime_minutes_test.tconst
                          INNER JOIN start_year_test ON end_year_test.tconst = start_year_test.tconst
                          FULL OUTER JOIN user_ratings_test ON end_year_test.tconst = user_ratings_test.tconst
+                         FULL OUTER JOIN tmdb_ratings_test ON end_year_test.tconst = tmdb_ratings_test.tconst
                          ''').fetchdf()
 
     tconst_order = conn.execute('SELECT tconst FROM end_year_test').fetchdf()
     tconst_order['order'] = range(len(tconst_order))
     test_merged_df = test_merged_df.merge(tconst_order, on='tconst').sort_values(by=['order']).drop('order', axis=1)
 
-    validation_merged_df = conn.execute('''SELECT end_year_validation.tconst, end_year_validation.end_year, num_votes_validation.num_votes, original_title_validation.original_title, primary_title_validation.primary_title, runtime_minutes_validation.runtime_minutes, start_year_validation.start_year, user_ratings_validation.user_ratings  
+    validation_merged_df = conn.execute('''SELECT end_year_validation.tconst, end_year_validation.end_year, num_votes_validation.num_votes, original_title_validation.original_title, primary_title_validation.primary_title, runtime_minutes_validation.runtime_minutes, start_year_validation.start_year, user_ratings_validation.user_ratings, tmdb_ratings_validation.tmdb_ratings   
                          FROM end_year_validation 
                          INNER JOIN num_votes_validation ON end_year_validation.tconst = num_votes_validation.tconst
                          INNER JOIN original_title_validation ON end_year_validation.tconst = original_title_validation.tconst
@@ -37,6 +39,7 @@ if __name__ == '__main__':
                          INNER JOIN runtime_minutes_validation ON end_year_validation.tconst = runtime_minutes_validation.tconst
                          INNER JOIN start_year_validation ON end_year_validation.tconst = start_year_validation.tconst
                          FULL OUTER JOIN user_ratings_validation ON end_year_validation.tconst = user_ratings_validation.tconst
+                         FULL OUTER JOIN tmdb_ratings_validation ON end_year_validation.tconst = tmdb_ratings_validation.tconst
                          ''').fetchdf()
 
     tconst_order = conn.execute('SELECT tconst FROM end_year_validation').fetchdf()
@@ -65,6 +68,28 @@ if __name__ == '__main__':
         
     validation_merged_df['renamed'] = renamed
 
+    test_final_ratings = []
+    for i in range(len(test_merged_df)):
+        curr = test_merged_df.iloc[i]
+        if math.isnan(curr['user_ratings']):
+            test_final_ratings.append(curr['tmdb_ratings'])
+        else:
+            test_final_ratings.append(curr['user_ratings'])
+    test_merged_df = test_merged_df.drop('tmdb_ratings', 1)
+    test_merged_df = test_merged_df.drop('user_ratings', 1)
+    test_merged_df['user_ratings'] = test_final_ratings
+
+    validation_final_ratings = []
+    for i in range(len(validation_merged_df)):
+        curr = validation_merged_df.iloc[i]
+        if math.isnan(curr['user_ratings']):
+            validation_final_ratings.append(curr['tmdb_ratings'])
+        else:
+            validation_final_ratings.append(curr['user_ratings'])
+    validation_merged_df = validation_merged_df.drop('tmdb_ratings', 1)
+    validation_merged_df = validation_merged_df.drop('user_ratings', 1)
+    validation_merged_df['user_ratings'] = validation_final_ratings
+
     test_merged_df = test_merged_df.drop('original_title', 1)
     test_merged_df = test_merged_df.drop('primary_title', 1)
     test_merged_df = test_merged_df.drop('tconst', 1)
@@ -79,8 +104,8 @@ if __name__ == '__main__':
     validation_with_rating_index = np.where(validation_merged_df['user_ratings'].notnull())[0]
     validation_without_rating_index = np.where(validation_merged_df['user_ratings'].isnull())[0]
 
-    # print(f"{len(test_with_rating_index)} + {len(test_without_rating_index)} = {len(test_merged_df)}")
-    # print(f"{len(validation_with_rating_index)} + {len(validation_without_rating_index)} = {len(validation_merged_df)}")
+    print(f"{len(test_with_rating_index)} + {len(test_without_rating_index)} = {len(test_merged_df)}")
+    print(f"{len(validation_with_rating_index)} + {len(validation_without_rating_index)} = {len(validation_merged_df)}")
 
     test_with_rating = test_merged_df.iloc[test_with_rating_index]
     test_without_rating = test_merged_df.iloc[test_without_rating_index]

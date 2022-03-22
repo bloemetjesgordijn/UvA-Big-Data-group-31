@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     ratings_tconst_list = []
     ratings_ratings_list = []
-    movielens_df = pd.read_csv('../movielens/ratings.csv')
+    movielens_df = pd.read_csv(os.getcwd() + '/movielens/ratings.csv')
     for i in range(len(movielens_df[:100000])):
         curr = movielens_df.iloc[i]
         curr_id = str(int(curr['movieId']))
@@ -24,7 +24,6 @@ if __name__ == '__main__':
     ratings_df = pd.DataFrame(list(zip(ratings_tconst_list, ratings_ratings_list)), columns =['tconst', 'rating'])
     mean_ratings_df = ratings_df.groupby(['tconst']).mean()
 
-    print(len(mean_ratings_df))
 
     tconst_train = conn.execute('SELECT tconst FROM labels_train').fetchdf()['tconst'].tolist()
     tconst_test = conn.execute('SELECT tconst FROM test_hidden').fetchdf()['tconst'].tolist()
@@ -33,24 +32,20 @@ if __name__ == '__main__':
 ## Cleaning/adjusting datatrain_end_year = []
     mean_ratings_list = mean_ratings_df['rating'].tolist()
     mean_ratings_tconsts = mean_ratings_df.index.tolist()
-    train_user_ratings = []
+    train_movielens_ratings = []
     for i in range(len(mean_ratings_list)):
         if mean_ratings_tconsts[i] in tconst_train:
-            train_user_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
+            train_movielens_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
 
-    test_user_ratings = []
+    test_movielens_ratings = []
     for i in range(len(mean_ratings_list)):
         if mean_ratings_tconsts[i] in tconst_test:
-            test_user_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
+            test_movielens_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
     
-    validation_user_ratings = []
+    validation_movielens_ratings = []
     for i in range(len(mean_ratings_list)):
         if mean_ratings_tconsts[i] in tconst_validation:
-            validation_user_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
-
-    print(len(train_user_ratings))
-    print(len(test_user_ratings))
-    print(len(validation_user_ratings))
+            validation_movielens_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
 
     ### Creating new tables in DB
     conn.close()

@@ -14,7 +14,7 @@ if __name__ == '__main__':
     api_key = "d3bb55da5cf488e09157238216d2dba8"
 
     ### Connect to DB
-    conn = duckdb.connect('../db/db.duckdb', read_only=True)
+    conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=True)
 
     ### File specific variables
     duckDB_col = "tmdb_ratings"
@@ -32,8 +32,8 @@ if __name__ == '__main__':
             rating = float(response_json['movie_results'][0].get('vote_average'))
             train_tmdb_ratings.append([i, rating])
         except Exception as e:
-            print(f"Error querying {i} with error: {e}")
-            print(len(train_tmdb_ratings))
+            print(f"Tconst {i} is not in TMDB")
+            print(f"{len(train_tmdb_ratings)}/{len(tconst_train)}")
 
     print(len(train_tmdb_ratings))
 
@@ -46,8 +46,8 @@ if __name__ == '__main__':
             rating = float(response_json['movie_results'][0].get('vote_average'))
             test_tmdb_ratings.append([i, rating])
         except Exception as e:
-            print(f"Error querying {i} with error: {e}")
-            print(len(test_tmdb_ratings))
+            print(f"Tconst {i} is not in TMDB")
+            print(f"{len(test_tmdb_ratings)}/{len(tconst_test)}")
 
     print(len(test_tmdb_ratings))
 
@@ -60,15 +60,15 @@ if __name__ == '__main__':
             rating = float(response_json['movie_results'][0].get('vote_average'))
             validation_tmdb_ratings.append([i, rating])
         except Exception as e:
-            print(f"Error querying {i} with error: {e}")
-            print(len(validation_tmdb_ratings))
+            print(f"Tconst {i} is not in TMDB")
+            print(f"{len(validation_tmdb_ratings)}/{len(tconst_validation)}")
 
     print(len(validation_tmdb_ratings))
     print(time.time() - now)
 
     ### Creating new tables in DB
     conn.close()
-    conn = duckdb.connect('../db/db.duckdb', read_only=False)
+    conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=False)
     for i in ['train', 'test', 'validation']:
         curr = f"{duckDB_col}_{i}"
         try:

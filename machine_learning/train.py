@@ -8,6 +8,7 @@ from keras.models import Sequential   # importing Sequential model
 from keras.layers import Dense        # importing Dense layers
 import keras.optimizers
 import tensorflow as tf
+import math
 
 if __name__ == '__main__':
     epochs = 10
@@ -41,8 +42,16 @@ if __name__ == '__main__':
         
     merged_df['renamed'] = renamed
 
-    merged_df['user_ratings'] = merged_df['tmdb_ratings']
+    final_ratings = []
+    for i in range(len(merged_df)):
+        curr = merged_df.iloc[i]
+        if math.isnan(curr['user_ratings']):
+            final_ratings.append(curr['tmdb_ratings'])
+        else:
+            final_ratings.append(curr['user_ratings'])
     merged_df = merged_df.drop('tmdb_ratings', 1)
+    merged_df = merged_df.drop('user_ratings', 1)
+    merged_df['user_ratings'] = final_ratings
 
     ### Transforming data to suit ML
     merged_df = merged_df.drop('original_title', 1)

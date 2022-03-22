@@ -1,5 +1,6 @@
 @ECHO OFF
 ECHO ====STARTING SCRIPT=====
+pip install -r %cd%/requirements.txt
 echo Startin/cleaning DuckDB and inititializing local train tables.
 python %cd%/db/init.py
 echo ====Initialized train tables
@@ -27,6 +28,12 @@ echo ====Cleaned runtime
 echo ====Enriching dataset with user ratings from twitter dataset
 python %cd%/enrich_data/ratings.py
 echo ====Enriched with user ratings
+echo ====Enriching dataset with MovieLens
+python %cd%/enrich_data/movielens.py
+echo ====Enriched with MovieLens
+echo ====Enriching dataset with TMDB API
+python %cd%/enrich_data/ratings.py
+echo ====Enriched with TMDB API
 echo ====Deleting original train/test/validation tables
 python %cd%/clean_scripts/delete_initial.py
 echo ====Deleted original train/test/validation tables
