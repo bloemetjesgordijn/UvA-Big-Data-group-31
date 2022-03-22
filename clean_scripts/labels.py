@@ -21,7 +21,7 @@ if __name__ == '__main__':
     tconst_train = full_train_df['tconst'].tolist()
     ###################
 
-    ### Cleaning/adjusting datatrain_end_year = []
+    ### Cleaning/adjusting data
     labels = full_train_df['label'].tolist()
     train_labels = []
     for i in range(len(labels)):

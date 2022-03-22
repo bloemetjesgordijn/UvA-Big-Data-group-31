@@ -3,8 +3,6 @@ import pandas as pd
 import os
 
 if __name__ == '__main__':
-    ### Connect to DB
-    conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=True)
 
     ### File specific variables
     duckDB_col = "movielens_ratings"
@@ -12,7 +10,7 @@ if __name__ == '__main__':
     ratings_tconst_list = []
     ratings_ratings_list = []
     movielens_df = pd.read_csv(os.getcwd() + '/movielens/ratings.csv')
-    for i in range(len(movielens_df[:100000])):
+    for i in range(len(movielens_df)):
         curr = movielens_df.iloc[i]
         curr_id = str(int(curr['movieId']))
         zeroes_to_add = 7 - len(curr_id)
@@ -29,24 +27,24 @@ if __name__ == '__main__':
     tconst_test = conn.execute('SELECT tconst FROM test_hidden').fetchdf()['tconst'].tolist()
     tconst_validation = conn.execute('SELECT tconst FROM validation_hidden').fetchdf()['tconst'].tolist()
 
-## Cleaning/adjusting datatrain_end_year = []
+## Cleaning/adjusting data
     mean_ratings_list = mean_ratings_df['rating'].tolist()
     mean_ratings_tconsts = mean_ratings_df.index.tolist()
     train_movielens_ratings = []
     for i in range(len(mean_ratings_list)):
         if mean_ratings_tconsts[i] in tconst_train:
             train_movielens_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
-
+    print(len(train_movielens_ratings))
     test_movielens_ratings = []
     for i in range(len(mean_ratings_list)):
         if mean_ratings_tconsts[i] in tconst_test:
             test_movielens_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
-    
+    print(len(test_movielens_ratings))
     validation_movielens_ratings = []
     for i in range(len(mean_ratings_list)):
         if mean_ratings_tconsts[i] in tconst_validation:
             validation_movielens_ratings.append([mean_ratings_tconsts[i], mean_ratings_list[i]])
-
+    print(len(validation_movielens_ratings))
     ### Creating new tables in DB
     conn.close()
     conn = duckdb.connect(os.getcwd() + '/db/db.duckdb', read_only=False)

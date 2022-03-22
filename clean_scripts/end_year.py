@@ -31,7 +31,7 @@ if __name__ == '__main__':
     tconst_validation = full_validation_df['tconst'].tolist()
     ###################
 
-    ### Cleaning/adjusting datatrain_end_year = []
+    ### Cleaning/adjusting data
     train_end_year = []
     for i in range(len(full_train_df)):
         curr = full_train_df.iloc[i]['endYear']

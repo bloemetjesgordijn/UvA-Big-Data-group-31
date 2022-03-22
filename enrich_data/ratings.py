@@ -29,7 +29,7 @@ if __name__ == '__main__':
     tconst_validation = conn.execute('SELECT tconst FROM validation_hidden').fetchdf()['tconst'].tolist()
     ###################
 
-    ## Cleaning/adjusting datatrain_end_year = []
+    ## Cleaning/adjusting data
     mean_ratings_list = mean_ratings_df['rating'].tolist()
     mean_ratings_tconsts = mean_ratings_df.index.tolist()
     train_user_ratings = []

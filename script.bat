@@ -28,20 +28,9 @@ echo ====Cleaned runtime
 echo ====Enriching dataset with user ratings from twitter dataset
 python %cd%/enrich_data/ratings.py
 echo ====Enriched with user ratings
-echo ====Enriching dataset with MovieLens
+echo ==== Enriching dataset with movielens
 python %cd%/enrich_data/movielens.py
-echo ====Enriched with MovieLens
-echo ====Enriching dataset with TMDB API
-python %cd%/enrich_data/ratings.py
-echo ====Enriched with TMDB API
-echo ====Deleting original train/test/validation tables
-python %cd%/clean_scripts/delete_initial.py
-echo ====Deleted original train/test/validation tables
-echo ====Going to train the Machine Learning models
-python %cd%/machine_learning/train.py
-echo ====Trained and saved models
-echo ====Predicting test/validation data
-python %cd%/machine_learning/predict.py
-echo ====Predicted data
+echo ====Enriched with movielens
+
 
 PAUSE
